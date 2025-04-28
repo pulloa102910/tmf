@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <title>Simulate Sea Level</title>
 </head>
-<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 10px;">
+  
+  <h2>Sea Level Simulation</h2>
+
   <form id="simulateForm" onsubmit="sendSimulate(); return false;" style="display: flex; flex-direction: column; gap: 10px; width: 250px;">
     <input type="number" id="nivelInput" placeholder="Enter sea level (m)" step="0.1" required style="padding: 8px; font-size: 16px;" />
     
@@ -32,7 +35,7 @@
       return response.json();
     })
     .then(data => {
-      alert('✅ Simulation successful: ' + JSON.stringify(data));
+      alert('✅ Simulation completed: ' + JSON.stringify(data));
       if (window.parent) {
         window.parent.postMessage({ type: 'REFRESH_LAYER' }, '*');
       }
@@ -50,7 +53,7 @@
     })
     .then(response => {
       if (!response.ok) {
-        throw new Error('Clear request failed.');
+        throw new Error('Clear map request failed.');
       }
       return response.json();
     })
@@ -66,5 +69,6 @@
     });
   }
   </script>
+
 </body>
 </html>
