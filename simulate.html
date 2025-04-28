@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulate Sea Level</title>
+</head>
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+  <form id="simulateForm" onsubmit="sendSimulate(); return false;" style="display: flex; flex-direction: column; gap: 10px; width: 250px;">
+    <input type="number" id="nivelInput" placeholder="Enter sea level (m)" step="0.1" required style="padding: 8px; font-size: 16px;" />
+    <button type="submit" style="padding: 10px; background-color: #0078d4; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
+      Simulate Flood
+    </button>
+  </form>
+
+  <script>
+  function sendSimulate() {
+    const nivel = document.getElementById('nivelInput').value;
+    fetch('http://127.0.0.1:5000/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nivel_mar: parseFloat(nivel) })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Simulation request failed.');
+      }
+      return response.json();
+    })
+    .then(data => {
+      alert('✅ Simulation successful: ' + JSON.stringify(data));
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('❌ Error sending simulation: ' + error.message);
+    });
+  }
+  </script>
+</body>
+</html>
