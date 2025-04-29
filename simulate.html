@@ -1,74 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Simulate Sea Level</title>
+    <meta charset="UTF-8">
+    <title>Sea Level Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px;
+            width: 80%;
+            max-width: 300px;
+        }
+        button {
+            cursor: pointer;
+        }
+        .simulate {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+        }
+        .clear {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+        }
+    </style>
 </head>
-<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 10px;">
-  
-  <h2>Sea Level Simulation</h2>
+<body>
 
-  <form id="simulateForm" onsubmit="sendSimulate(); return false;" style="display: flex; flex-direction: column; gap: 10px; width: 250px;">
-    <input type="number" id="nivelInput" placeholder="Enter sea level (m)" step="0.1" required style="padding: 8px; font-size: 16px;" />
-    
-    <button type="submit" style="padding: 10px; background-color: #0078d4; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-      Simulate Flood
-    </button>
+    <h2>Sea Level Simulation</h2>
+    <input type="number" id="nivelInput" placeholder="Enter sea level (m)" step="0.1" required>
+    <br>
+    <button class="simulate" onclick="sendSimulate()">Simulate Flood</button>
+    <br>
+    <button class="clear" onclick="sendClear()">Clear Map</button>
 
-    <button type="button" onclick="clearMap();" style="padding: 10px; background-color: #d40000; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-      Clear Map
-    </button>
-  </form>
+    <script>
+        function sendSimulate() {
+            const nivel = document.getElementById('nivelInput').value;
+            if (!nivel) {
+                alert('Please enter a sea level!');
+                return;
+            }
+            fetch('http://127.0.0.1:5000/simulate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nivel_mar: parseFloat(nivel) })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Simulation request failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('✅ Simulation complete: ' + JSON.stringify(data));
+                refreshMapLayer(); // 🔥 Actualiza el mapa después de simular
+            })
+            .catch(error => {
+                console.error('❌ Error during simulation:', error);
+                alert('❌ Simulation failed: ' + error.message);
+            });
+        }
 
-  <script>
-  function sendSimulate() {
-    const nivel = document.getElementById('nivelInput').value;
-    fetch('http://127.0.0.1:5000/simulate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nivel_mar: parseFloat(nivel) })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Simulation request failed.');
-      }
-      return response.json();
-    })
-    .then(data => {
-      alert('✅ Simulation completed: ' + JSON.stringify(data));
-      if (window.parent) {
-        window.parent.postMessage({ type: 'REFRESH_LAYER' }, '*');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('❌ Error sending simulation: ' + error.message);
-    });
-  }
+        function sendClear() {
+            fetch('http://127.0.0.1:5000/clear', {
+                method: 'POST',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Clear request failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('🧹 Map cleared successfully.');
+                refreshMapLayer(); // 🔥 También actualiza el mapa después de limpiar
+            })
+            .catch(error => {
+                console.error('❌ Error during clearing:', error);
+                alert('❌ Clear failed: ' + error.message);
+            });
+        }
 
-  function clearMap() {
-    fetch('http://127.0.0.1:5000/clear', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Clear map request failed.');
-      }
-      return response.json();
-    })
-    .then(data => {
-      alert('🧹 Map cleared: ' + JSON.stringify(data));
-      if (window.parent) {
-        window.parent.postMessage({ type: 'REFRESH_LAYER' }, '*');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('❌ Error clearing map: ' + error.message);
-    });
-  }
-  </script>
+        function refreshMapLayer() {
+            console.log("🌀 Refreshing map...");
+            const iframe = parent.document.querySelector('iframe');
+            if (iframe) {
+                iframe.contentWindow.location.reload();
+            }
+        }
+    </script>
 
 </body>
 </html>
